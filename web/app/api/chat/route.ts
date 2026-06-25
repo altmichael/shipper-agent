@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
 import { readFileSync } from "fs";
 import { join } from "path";
 import { checkRateLimit, getIP } from "@/lib/rate-limit";
@@ -50,10 +50,10 @@ export async function POST(req: Request) {
     systemInstruction: systemPrompt,
     generationConfig: { maxOutputTokens: 1024 },
     safetySettings: [
-      { category: "HARM_CATEGORY_HARASSMENT" as const, threshold: "BLOCK_LOW_AND_ABOVE" as const },
-      { category: "HARM_CATEGORY_HATE_SPEECH" as const, threshold: "BLOCK_LOW_AND_ABOVE" as const },
-      { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT" as const, threshold: "BLOCK_LOW_AND_ABOVE" as const },
-      { category: "HARM_CATEGORY_DANGEROUS_CONTENT" as const, threshold: "BLOCK_LOW_AND_ABOVE" as const },
+      { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE },
+      { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE },
+      { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE },
+      { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE },
     ],
   });
 
