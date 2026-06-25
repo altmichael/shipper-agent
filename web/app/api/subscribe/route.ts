@@ -8,8 +8,8 @@ export async function POST(req: Request) {
   const webhookUrl = process.env.WEBHOOK_URL;
   if (webhookUrl) {
     try {
-      // Send as form-encoded data (required by Forminit public forms)
-      const body = new URLSearchParams({ email, timestamp: new Date().toISOString() });
+      // Forminit requires prefixed block keys (fi-sender-email), not raw "email"
+      const body = new URLSearchParams({ "fi-sender-email": email });
       await fetch(webhookUrl, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
