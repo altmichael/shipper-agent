@@ -287,6 +287,11 @@ def main():
         import shutil
         dest = Path.cwd() / "CLAUDE.md"
         src = SCRIPT_DIR / "CLAUDE.md"
+        # Running --init from inside the repo itself: source and target are the same
+        if src.resolve() == dest.resolve():
+            print(f"{Colors.GREEN}✓ CLAUDE.md is already here — your co-founder is ready.{Colors.RESET}")
+            print(f"{Colors.DIM}Run --init from a different project folder to copy it there.{Colors.RESET}")
+            return
         if dest.exists():
             overwrite = input(f"{Colors.YELLOW}CLAUDE.md already exists here. Overwrite? (y/n):{Colors.RESET} ").strip().lower()
             if overwrite != "y":
