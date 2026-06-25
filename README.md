@@ -1,6 +1,6 @@
 # The Shipper Agent
 
-**Try it free → [shipperagent.vercel.app](https://shipperagent.vercel.app)** *(no API key, no credit card — 4 free messages)*
+**Try it free → [shipper-agent.vercel.app](https://shipper-agent.vercel.app/)** *(no API key, no credit card — 4 free messages)*
 
 ---
 
