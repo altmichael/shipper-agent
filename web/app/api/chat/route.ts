@@ -7,7 +7,7 @@ import { moderateInput, SYSTEM_ADDENDUM } from "@/lib/moderation";
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
 function getSystemPrompt(): string {
-  const base = readFileSync(join(process.cwd(), "..", "SYSTEM_PROMPT.md"), "utf-8");
+  const base = readFileSync(join(process.cwd(), "SYSTEM_PROMPT.md"), "utf-8");
   return `${base}\n\n${SYSTEM_ADDENDUM}`;
 }
 
@@ -46,7 +46,7 @@ export async function POST(req: Request) {
   const lastMessage = messages[messages.length - 1];
 
   const model = genAI.getGenerativeModel({
-    model: "gemini-2.5-flash-lite",  // update model ID here if needed
+    model: "gemini-2.0-flash-lite",
     systemInstruction: systemPrompt,
     generationConfig: { maxOutputTokens: 1024 },
     safetySettings: [
