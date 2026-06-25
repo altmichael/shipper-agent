@@ -62,17 +62,35 @@ export async function POST(req: Request) {
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
     async start(controller) {
-      try {
-        const result = await chat.sendMessageStream(lastMessage.content);
-        for await (const chunk of result.stream) {
-          const text = chunk.text();
-          if (text) controller.enqueue(encoder.encode(text));
+      // Retry on 503 (model overloaded) — up to 3 attempts with backoff
+      const MAX_RETRIES = 3;
+      for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+        try {
+          const result = await chat.sendMessageStream(lastMessage.content);
+          for await (const chunk of result.stream) {
+            const text = chunk.text();
+            if (text) controller.enqueue(encoder.encode(text));
+          }
+          controller.close();
+          return;
+        } catch (err: unknown) {
+          const status = (err as { status?: number })?.status;
+          const isOverloaded = status === 503 || status === 429;
+
+          if (isOverloaded && attempt < MAX_RETRIES) {
+            // Wait 1s, 2s, 4s before retrying
+            await new Promise((r) => setTimeout(r, 1000 * 2 ** (attempt - 1)));
+            continue;
+          }
+
+          console.error("Gemini error:", err);
+          const msg = isOverloaded
+            ? "I'm getting a ton of requests right now — give me a few seconds and hit send again."
+            : "Something went wrong. Try again.";
+          controller.enqueue(encoder.encode(msg));
+          controller.close();
+          return;
         }
-      } catch (err) {
-        console.error("Gemini error:", err);
-        controller.enqueue(encoder.encode("Something went wrong. Try again."));
-      } finally {
-        controller.close();
       }
     },
   });

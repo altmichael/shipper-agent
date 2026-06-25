@@ -5,20 +5,20 @@ export async function POST(req: Request) {
     return Response.json({ error: "Invalid email" }, { status: 400 });
   }
 
-  // Forward to webhook (Zapier, Make, etc.) if configured
   const webhookUrl = process.env.WEBHOOK_URL;
   if (webhookUrl) {
     try {
+      // Send as form-encoded data (required by Forminit public forms)
+      const body = new URLSearchParams({ email, timestamp: new Date().toISOString() });
       await fetch(webhookUrl, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, timestamp: new Date().toISOString() }),
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: body.toString(),
       });
     } catch (err) {
       console.error("Webhook failed:", err);
     }
   } else {
-    // Fallback: log to console (replace with DB in production)
     console.log(`[subscriber] ${new Date().toISOString()} — ${email}`);
   }
 

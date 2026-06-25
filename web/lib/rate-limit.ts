@@ -8,12 +8,13 @@ interface IPRecord {
 }
 
 const ipStore = new Map<string, IPRecord>();
-let globalCallsThisHour = 0;
-let hourWindowStart = Date.now();
+let globalCallsToday = 0;
+let dayWindowStart = Date.now();
 
 const MAX_MESSAGES_PER_IP = 4;
 const IP_WINDOW_MS = 24 * 60 * 60 * 1000; // 24 hours
-const MAX_GLOBAL_CALLS_PER_HOUR = 100;
+const MAX_GLOBAL_CALLS_PER_DAY = 100;
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 export type RateLimitResult =
   | { allowed: true }
@@ -22,16 +23,17 @@ export type RateLimitResult =
 export function checkRateLimit(ip: string): RateLimitResult {
   const now = Date.now();
 
-  // Reset global hourly counter
-  if (now - hourWindowStart > 60 * 60 * 1000) {
-    globalCallsThisHour = 0;
-    hourWindowStart = now;
+  // Reset the global daily counter once a day
+  if (now - dayWindowStart > DAY_MS) {
+    globalCallsToday = 0;
+    dayWindowStart = now;
   }
 
-  if (globalCallsThisHour >= MAX_GLOBAL_CALLS_PER_HOUR) {
+  // Hard global cap — protects your API budget no matter what
+  if (globalCallsToday >= MAX_GLOBAL_CALLS_PER_DAY) {
     return {
       allowed: false,
-      reason: "Service is busy right now. Try again in an hour.",
+      reason: "We've hit today's free usage cap. Come back tomorrow — or grab a paid plan for unlimited access.",
     };
   }
 
@@ -39,14 +41,14 @@ export function checkRateLimit(ip: string): RateLimitResult {
 
   if (!record) {
     ipStore.set(ip, { count: 1, firstSeen: now, blocked: false });
-    globalCallsThisHour++;
+    globalCallsToday++;
     return { allowed: true };
   }
 
-  // Reset window after 24 hours
+  // Reset this IP's window after 24 hours
   if (now - record.firstSeen > IP_WINDOW_MS) {
     ipStore.set(ip, { count: 1, firstSeen: now, blocked: false });
-    globalCallsThisHour++;
+    globalCallsToday++;
     return { allowed: true };
   }
 
@@ -60,7 +62,7 @@ export function checkRateLimit(ip: string): RateLimitResult {
   }
 
   record.count++;
-  globalCallsThisHour++;
+  globalCallsToday++;
   return { allowed: true };
 }
 
