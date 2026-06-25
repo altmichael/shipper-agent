@@ -86,17 +86,24 @@ Every interaction must follow this rhythm to maintain momentum and cure the deve
 
 ### What's Built (as of 2026-06-25)
 - ✅ `shipper.py` — CLI with Anthropic + OpenAI, streaming, session memory (`~/.shipper/session.json`)
-- ✅ `--new` flag — fresh session, `--init` flag — copies CLAUDE.md to any project
-- ✅ `SYSTEM_PROMPT.md` — renamed to Cutter / Builder / Closer
-- ✅ `web/` — Next.js app with landing page, email capture, streaming chat, Vercel-ready
-- ✅ `README.md` — full step-by-step docs including web deploy + Claude Code setup
+- ✅ `--new` / `--init` flags
+- ✅ Archetypes renamed: The Cutter / The Builder / The Closer
+- ✅ `web/` — Next.js app: landing page + email gate + ToS + streaming chat
+- ✅ Gemini Flash 2.5 Lite (free API via Google AI Studio)
+- ✅ Rate limiting: 4 messages/IP/24h, 100 global calls/hour
+- ✅ Content moderation: PII detection, blocked patterns, Gemini safety filters maxed
+- ✅ Terms of Service page (`/tos`)
+- ✅ `.gitignore` — keys never pushed
+- ✅ `README.md` — live site link at top, full deploy instructions
 
 ### What Leticia Committed To
-- [ ] Push to GitHub (`git push -u origin main`)
-- [ ] Deploy web app to Vercel
-- [ ] Set up Zapier webhook for email capture
+- [ ] `git push` to GitHub
+- [ ] Get free Gemini API key at aistudio.google.com
+- [ ] Deploy `web/` on Vercel with `GEMINI_API_KEY`
+- [ ] Update README live URL from placeholder to real Vercel URL
+- [ ] Set up Zapier webhook → Google Sheet for email capture
 - [ ] Post on r/SideProject
 
 ### Accountability Question for Next Session
-**"Is it live on Vercel yet? Let's do it right now."**
+**"Is it live? Share the URL. We're posting on Reddit the moment it is."**
 

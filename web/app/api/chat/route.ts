@@ -1,38 +1,79 @@
-import Anthropic from "@anthropic-ai/sdk";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { readFileSync } from "fs";
 import { join } from "path";
+import { checkRateLimit, getIP } from "@/lib/rate-limit";
+import { moderateInput, SYSTEM_ADDENDUM } from "@/lib/moderation";
 
-const client = new Anthropic();
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
 function getSystemPrompt(): string {
-  const filePath = join(process.cwd(), "..", "SYSTEM_PROMPT.md");
-  return readFileSync(filePath, "utf-8");
+  const base = readFileSync(join(process.cwd(), "..", "SYSTEM_PROMPT.md"), "utf-8");
+  return `${base}\n\n${SYSTEM_ADDENDUM}`;
 }
 
 export async function POST(req: Request) {
+  // Rate limiting
+  const ip = getIP(req);
+  const rateCheck = checkRateLimit(ip);
+  if (!rateCheck.allowed) {
+    return Response.json({ error: rateCheck.reason }, { status: 429 });
+  }
+
   const { messages } = await req.json();
 
+  if (!Array.isArray(messages) || messages.length === 0) {
+    return Response.json({ error: "Invalid request." }, { status: 400 });
+  }
+
+  // Moderate the latest user message
+  const lastUserMessage = [...messages].reverse().find((m) => m.role === "user");
+  if (lastUserMessage) {
+    const modResult = moderateInput(lastUserMessage.content);
+    if (!modResult.safe) {
+      return Response.json({ error: modResult.reason }, { status: 422 });
+    }
+  }
+
   const systemPrompt = getSystemPrompt();
+
+  // Convert messages to Gemini format
+  // Gemini uses "model" instead of "assistant", and needs alternating user/model turns
+  const history = messages.slice(0, -1).map((m: { role: string; content: string }) => ({
+    role: m.role === "assistant" ? "model" : "user",
+    parts: [{ text: m.content }],
+  }));
+
+  const lastMessage = messages[messages.length - 1];
+
+  const model = genAI.getGenerativeModel({
+    model: "gemini-2.5-flash-lite",  // update model ID here if needed
+    systemInstruction: systemPrompt,
+    generationConfig: { maxOutputTokens: 1024 },
+    safetySettings: [
+      { category: "HARM_CATEGORY_HARASSMENT" as const, threshold: "BLOCK_LOW_AND_ABOVE" as const },
+      { category: "HARM_CATEGORY_HATE_SPEECH" as const, threshold: "BLOCK_LOW_AND_ABOVE" as const },
+      { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT" as const, threshold: "BLOCK_LOW_AND_ABOVE" as const },
+      { category: "HARM_CATEGORY_DANGEROUS_CONTENT" as const, threshold: "BLOCK_LOW_AND_ABOVE" as const },
+    ],
+  });
+
+  const chat = model.startChat({ history });
 
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
     async start(controller) {
-      const anthropicStream = client.messages.stream({
-        model: "claude-sonnet-4-6",
-        max_tokens: 2048,
-        system: systemPrompt,
-        messages,
-      });
-
-      for await (const chunk of anthropicStream) {
-        if (
-          chunk.type === "content_block_delta" &&
-          chunk.delta.type === "text_delta"
-        ) {
-          controller.enqueue(encoder.encode(chunk.delta.text));
+      try {
+        const result = await chat.sendMessageStream(lastMessage.content);
+        for await (const chunk of result.stream) {
+          const text = chunk.text();
+          if (text) controller.enqueue(encoder.encode(text));
         }
+      } catch (err) {
+        console.error("Gemini error:", err);
+        controller.enqueue(encoder.encode("Something went wrong. Try again."));
+      } finally {
+        controller.close();
       }
-      controller.close();
     },
   });
 

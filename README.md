@@ -1,5 +1,9 @@
 # The Shipper Agent
 
+**Try it free → [shipperagent.vercel.app](https://shipperagent.vercel.app)** *(no API key, no credit card — 4 free messages)*
+
+---
+
 **A CLI co-founder that refuses to let you build in localhost forever.**
 
 Most AI tools help you write more code. This one tells you to stop hiding and ship. It reads the subtext of your procrastination, silently diagnoses *why* you're stalling, and shifts persona to apply exactly the right pressure.
@@ -140,7 +144,7 @@ Open [http://localhost:3000](http://localhost:3000).
 1. Push this repo to GitHub
 2. Go to [vercel.com](https://vercel.com) → New Project → import your repo
 3. Set root directory to `web`
-4. Add environment variable: `ANTHROPIC_API_KEY=sk-ant-...`
+4. Add environment variable: `GEMINI_API_KEY=AIza...` (free at [aistudio.google.com](https://aistudio.google.com))
 5. Deploy
 
 ### Collect emails
