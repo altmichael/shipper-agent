@@ -10,9 +10,9 @@ Most AI tools help you write more code. This one tells you to stop hiding and sh
 
 | | Archetype | When it triggers | What it does |
 |---|---|---|---|
-| 🍏 | **The Visionary Simplifier** | Cluttered UI, lost soul, tech jargon | Cuts features, demands the magic moment |
-| 🚀 | **The First-Principles Executor** | Over-engineering, zero users, stalled deploy | Deletes your auth, ships a URL hash instead |
-| 💰 | **The Market & Offer Master** | Afraid to sell, weak positioning | Rewrites your pitch into an offer they can't ignore |
+| ✂️ | **The Cutter** | Cluttered UI, lost soul, tech jargon | Cuts features, demands the magic moment |
+| 🔧 | **The Builder** | Over-engineering, zero users, stalled deploy | Deletes your auth, ships a URL hash instead |
+| 💰 | **The Closer** | Afraid to sell, weak positioning | Rewrites your pitch into an offer they can't ignore |
 
 The agent never breaks character. It never says "I am switching personas." It just pushes.
 
@@ -64,6 +64,7 @@ python shipper.py                    # Resume your last session
 python shipper.py --new              # Start a fresh project
 python shipper.py --provider openai  # Use GPT-4o instead of Claude
 python shipper.py --dry-run          # Print the system prompt and exit
+python shipper.py --init             # Copy CLAUDE.md into your current project (for Claude Code)
 ```
 
 ---
@@ -89,9 +90,15 @@ Then start talking about your half-finished project.
 
 ## Use With Claude Code
 
-If you use [Claude Code](https://claude.ai/code), copy `CLAUDE.md` into your project root. Claude will load it automatically at the start of every session and act as your persistent co-founder across your entire codebase — not just in conversation, but while you build.
+Navigate to your project and run:
 
-Add a **Project Status** section at the bottom of your CLAUDE.md to track commitments, progress, and next actions across sessions:
+```bash
+python /path/to/shipper.py --init
+```
+
+That's it. It copies `CLAUDE.md` into your current folder. Open it in Claude Code and your co-founder is already loaded — no setup, no copy-pasting.
+
+Add a **Project Status** section at the bottom of your CLAUDE.md to track commitments and next actions across sessions:
 
 ```markdown
 ## PROJECT STATUS
@@ -108,7 +115,41 @@ Add a **Project Status** section at the bottom of your CLAUDE.md to track commit
 "Did you do the thing? We're doing it right now if not."
 ```
 
-Claude will read this before you type a word and lead with accountability.
+Claude reads this before you type a word and opens with accountability.
+
+---
+
+## Hosted Web Version
+
+A web app lives in `web/` — no API key required for users. Try it, collect emails, charge later.
+
+### Run locally
+
+```bash
+cd web
+npm install
+cp .env.example .env.local
+# Add your ANTHROPIC_API_KEY to .env.local
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000).
+
+### Deploy to Vercel (5 min)
+
+1. Push this repo to GitHub
+2. Go to [vercel.com](https://vercel.com) → New Project → import your repo
+3. Set root directory to `web`
+4. Add environment variable: `ANTHROPIC_API_KEY=sk-ant-...`
+5. Deploy
+
+### Collect emails
+
+Set `WEBHOOK_URL` in your Vercel environment variables to any webhook receiver:
+- **Zapier** → "Catch Hook" trigger → Google Sheet or Mailchimp
+- **Make** → HTTP webhook → anywhere
+
+Users enter their email, it fires to your webhook, they go straight to the chat.
 
 ---
 

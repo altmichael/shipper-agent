@@ -1,0 +1,20 @@
+# Environment files — never commit these
+.env
+.env.local
+.env*.local
+
+# Web app
+web/node_modules
+web/.next
+web/out
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Session memory
+.shipper/
+
+# OS
+.DS_Store

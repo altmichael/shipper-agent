@@ -272,11 +272,30 @@ def main():
         help="Start a fresh session, clearing previous conversation",
     )
     parser.add_argument(
+        "--init",
+        action="store_true",
+        help="Copy CLAUDE.md into the current directory to activate co-founder mode in Claude Code",
+    )
+    parser.add_argument(
         "--dry-run",
         action="store_true",
         help="Print the system prompt and exit without starting a chat",
     )
     args = parser.parse_args()
+
+    if args.init:
+        import shutil
+        dest = Path.cwd() / "CLAUDE.md"
+        src = SCRIPT_DIR / "CLAUDE.md"
+        if dest.exists():
+            overwrite = input(f"{Colors.YELLOW}CLAUDE.md already exists here. Overwrite? (y/n):{Colors.RESET} ").strip().lower()
+            if overwrite != "y":
+                print(f"{Colors.DIM}Aborted.{Colors.RESET}")
+                return
+        shutil.copy(src, dest)
+        print(f"{Colors.GREEN}✓ CLAUDE.md copied to {dest}{Colors.RESET}")
+        print(f"{Colors.DIM}Open this folder in Claude Code — your co-founder is ready.{Colors.RESET}")
+        return
 
     if args.dry_run:
         print(load_system_prompt())
